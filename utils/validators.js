@@ -4,9 +4,6 @@ const emailRegEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+")
 const isEmpty = email => (email.trim() === '' ?  true : false);
 const isEmail = email => (email.match(emailRegEx)? true: false);
 
-
-
-
 exports.validateSignupData = (data) =>{
 let errors = {};
 
@@ -36,10 +33,10 @@ return {
 exports.validateLoginData = (data) =>{
     let errors = {}
  
-    if(isEmpty(user.email)){
+    if(isEmpty(data.email)){
        error.email = "Email must be empty!";
     }
-    if(isEmpty(user.password)){
+    if(isEmpty(data.password)){
        errors.password ="Password Must not be empty!";
     }
     if(Object.keys(errors).length > 0){
