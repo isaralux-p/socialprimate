@@ -5,7 +5,9 @@ const firebase = require ('firebase');
 firebase.initializeApp(config);
 
 
-const { validateSignupData, validateLoginData} = require('../utils/validators');
+const { validateSignupData, validateLoginData, reduceUserDetails } = require('../utils/validators');
+
+//--------------------------------------------------------------------------------------------------------------- SignUp
 exports.signup = (req,res) => {
     const newUser = {
        email : req.body.email,
@@ -13,7 +15,7 @@ exports.signup = (req,res) => {
        confirmPassword : req.body.confirmPassword,
        handle : req.body.handle
     };
-    //---------------------  Error Checking Section  ---------------------//
+
     const {valid, errors}  = validateSignupData(newUser);
     
     if(!valid) {
@@ -64,7 +66,7 @@ exports.signup = (req,res) => {
     })
  }
 
-
+ // ------------------------------------------------------------------------------------------------------------------ Login
  exports.login = (req, res) => {
     const user ={
        email: req.body.email,
@@ -100,7 +102,47 @@ exports.signup = (req,res) => {
           .json({error: err.code});
        }
     });
- }
+ };
+// --------------------------------------------------------------------------------------------------- get own user details
+ exports.getAuthenticatedUser = (req,res) => {
+     let userData = {};
+     db.doc(`/users/${req.user.handle}`)
+     .get()
+     .then(doc => {
+         if(doc.exists){
+             userData.credentials = doc.data();
+             return db.collection('likes').where('userHandle','==', req.user.handle).get()
+         }
+     })
+     .then(data => {
+         userData.likes = [];
+         data.forEach(doc => {
+             userData.likes.push(doc.data());
+         });
+         return res.json(userData);
+     })
+     .catch((err) => {
+         console.error(err);
+         return res.status(500).json({ error: err.code });
+     });
+ };
+
+ // ------------------------------------------------------------------------------------------------ Add user details
+ exports.addUserDetails = (req,res) => {
+     let userDetails = reduceUserDetails(req.body);
+
+     db.doc(`/users/${req.user.handle}`)
+     .update(userDetails)
+     .then(()=> {
+         return res.json({ message: 'Details added successfully'});
+     })
+     .catch(err => {
+         console.error(err);
+         return res.status(500).json({ error:err.code});
+     });
+ };
+
+
 
  exports.uploadImages = (req,res) => {
      const BusBoy = require('busboy');
@@ -150,3 +192,4 @@ exports.signup = (req,res) => {
      });
      busboy.end(req.rawBody);
  }
+
