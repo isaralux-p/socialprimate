@@ -1,11 +1,12 @@
-const { admin, db } = require('../functions/admin');
-const config = require('../utils/config');
+const { admin, db } = require('./admin');
+const config = require('./config');
 
 const firebase = require ('firebase');
 firebase.initializeApp(config);
 
 
-const { validateSignupData, validateLoginData, reduceUserDetails } = require('../utils/validators');
+const { validateSignupData, validateLoginData, reduceUserDetails } = require('./validators');
+const { user } = require('firebase-functions/lib/providers/auth');
 
 //--------------------------------------------------------------------------------------------------------------- SignUp
 exports.signup = (req,res) => {
@@ -119,7 +120,26 @@ exports.signup = (req,res) => {
          data.forEach(doc => {
              userData.likes.push(doc.data());
          });
-         return res.json(userData);
+         return db.collection('notifications') //add notification after authenticate -> for frontend 
+                  .where('recipient', '==', req.user.handle)
+                  .orderBy('createdAt', 'desc')
+                  .limit(10)
+                  .get();
+     })
+     .then((data) => {
+      userData.notifications = [];
+      data.forEach(doc => {
+         userData.notifications.push({
+            recipient: doc.data().recipient,
+            sender: doc.data().sender,
+            read: doc.data().read,
+            screamId: doc.data().screamId,
+            type: doc.data().type,
+            createAt : doc.data().createAt,
+            notificationId: doc.id
+         })
+      });
+      return res.json(userData);
      })
      .catch((err) => {
          console.error(err);
@@ -143,7 +163,7 @@ exports.signup = (req,res) => {
  };
 
 
-
+//------------------------------------------------------------------------------------------------------------ Upload Image
  exports.uploadImages = (req,res) => {
      const BusBoy = require('busboy');
      const path = require('path');
@@ -193,3 +213,58 @@ exports.signup = (req,res) => {
      busboy.end(req.rawBody);
  }
 
+//--------------------------------------------------------------------------------------------- get User details
+exports.getUserDetails = (req, res) => {
+   let userData = {};
+   db.doc(`/users/${req.params.handle}`)
+   .get()
+   .then(doc => {
+      if(doc.exists){
+         userData.user = doc.data();
+         return db
+         .collection('screams')
+         .where('userHandle','==', req.params.handle)
+         .orderBy('createdAt','desc')
+         .get();
+      }else {
+         return res.status(404).json({ error: "user not found"});
+      }
+   })
+   .then((data) =>{
+      userData.screams = [];
+      data.forEach(doc => {
+         userData.screams.push({
+            body: doc.data().body,
+            createdAt: doc.data().createdAt,
+            userHandle: doc.data().userHandle,
+            userImage: doc.data().userImage,
+            likeCount: doc.data().likeCount,
+            commentCount: doc.data().commentCount,
+            screamId: doc.id
+         })
+      });
+      return res.json(userData);
+   })
+   .catch(err => {
+      console.error(err);
+      return res.status(500).json({ error: err.code })
+   })
+}
+
+//-------------------------------------------------------------- markNotificationRead
+
+exports.markNotificationsRead = (req, res) => {
+   let batch = db.batch();
+   req.body.forEach(notice =>{
+      const notification = db.doc(`/notifications/${notice}`);
+      batch.update(notification, {read: true});
+   });
+   batch.commit()
+   .then(() => {
+      return res.json({ message: 'notificaitons marked read'});
+   })
+   .catch(err => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+   });
+}

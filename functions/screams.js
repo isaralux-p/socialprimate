@@ -1,4 +1,4 @@
-const { db } = require('../functions/admin');
+const { db } = require('./admin');
 
 exports.getAllScreams = (req,res) => {
     db
