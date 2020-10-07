@@ -5,7 +5,10 @@ const app = require('express')();
 
 const FireAuth = require('../utils/fireAuth');
 
-const { getAllScreams, postOneScream } = require('../handlers/screams');
+const { getAllScreams,
+        postOneScream,
+        getScream,
+        commentOnScream } = require('../handlers/screams');
 const { signup,
         login, 
         uploadImages, 
@@ -15,7 +18,13 @@ const { signup,
 
 //screams route
 app.get('/screams', getAllScreams);
+app.get('/scream/:screamId', getScream);
 app.post('/scream', FireAuth, postOneScream);
+app.post('/scream/:screamId/comment', FireAuth, commentOnScream);
+// Todo: delete scream
+// Todo: like scream
+// Todo: unlike scream
+// Todo: comment scream
 
 //user Route
 app.post ('/signup',signup);

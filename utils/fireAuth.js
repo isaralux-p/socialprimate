@@ -23,6 +23,7 @@ module.exports = (req, res, next) => {
        })
        .then(data => {
           req.user.handle = data.docs[0].data().handle; //extract data which is handle in array
+          req.user.imageURL = data.docs[0].data().imageURL;
           return next();  // allow request -> app.post/scream
        })
        .catch(err => {
