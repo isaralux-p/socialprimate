@@ -62,7 +62,7 @@ exports.signup = (req,res) => {
        }
        else {
           console.error(err);
-          return res.status(500).json({ error: err.code });
+          return res.status(500).json({ general: 'something went wrong, please try again'});
        }    
     })
  }
@@ -92,6 +92,8 @@ exports.signup = (req,res) => {
     })
     .catch(err => {
        console.error(err);
+       //auth/wrong-password
+       //auth/user-not-exist
        if(err.code === "auth/wrong-password") {
           return res
           .status(403)
