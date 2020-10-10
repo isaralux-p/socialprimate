@@ -36,7 +36,7 @@ exports.validateLoginData = (data) =>{
     let errors = {}
  
     if(isEmpty(data.email)){
-       error.email = "Email must be empty!";
+       errors.email = "Email must be empty!";
     }
     if(isEmpty(data.password)){
        errors.password ="Password Must not be empty!";

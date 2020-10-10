@@ -75,7 +75,7 @@ exports.signup = (req,res) => {
     }
     
     const {valid, errors}  = validateLoginData(user);
-    
+ 
     if(!valid) {
         return res.status(400).json(errors);
     }
@@ -102,7 +102,7 @@ exports.signup = (req,res) => {
        else {
           return res
           .status(500)
-          .json({error: err.code});
+          .json({errors: err.code});
        }
     });
  };
