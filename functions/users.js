@@ -137,7 +137,7 @@ exports.signup = (req,res) => {
             read: doc.data().read,
             screamId: doc.data().screamId,
             type: doc.data().type,
-            createAt : doc.data().createAt,
+            createdAt : doc.data().createdAt,
             notificationId: doc.id
          })
       });
@@ -257,8 +257,8 @@ exports.getUserDetails = (req, res) => {
 
 exports.markNotificationsRead = (req, res) => {
    let batch = db.batch();
-   req.body.forEach(notice =>{
-      const notification = db.doc(`/notifications/${notice}`);
+   req.body.forEach((notificationId) =>{
+      const notification = db.doc(`/notifications/${notificationId}`);
       batch.update(notification, {read: true});
    });
    batch.commit()

@@ -30,7 +30,7 @@ exports.getAllScreams = (req,res) => {
 exports.postOneScream = (req,res) =>{
 
     if(req.body.body.trim() === ''){
-       return res.status(400).json({ Commnet: 'commnet must not be empty' });
+       return res.status(400).json({ body: 'scream must not be empty' });
     }
  
     const newScream = {
@@ -80,7 +80,7 @@ exports.postOneScream = (req,res) =>{
          return res.json(screamData);
      })
      .catch(err => {
-         console.err(err);
+         console.error(err);
          res.status(500).json({ error: err.code });
      });
  };

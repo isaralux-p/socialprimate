@@ -5,7 +5,9 @@ const app = require('express')();
 
 const FireAuth = require('./fireAuth');
 const { db } = require('./admin');
-
+//add header to tell which resource to request for production
+const cors = require('cors');
+app.use(cors());
 const { getAllScreams,
         postOneScream,
         getScream,
@@ -51,7 +53,7 @@ exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
           db.doc(`/screams/${snapshot.data().screamId}`)
           .get()
           .then(doc =>{
-              if(doc.exist && (doc.data().userHandle !== snapshot.data().userHandle)){
+              if(doc.exists && (doc.data().userHandle !== snapshot.data().userHandle)){
                   return db.doc(`/notifications/${snapshot.id}`).set({
                       createdAt: new Date().toISOString(),
                       recipient: doc.data().userHandle,
@@ -59,7 +61,7 @@ exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
                       type: 'like',
                       read: false, 
                       screamId: doc.id
-                  })
+                  });
               }
           })
           .catch(err => {
@@ -116,10 +118,11 @@ exports.onUserImageChange = functions.firestore.document('/users/{userId}')
               return db.collection('screams').where('userHandle', '==', change.before.data().handle)
               .get()
               .then((data) => {
+                  console.log("data",data)
                   data.forEach(doc =>{
-                      const scream = db.doc(`/screams/$doc.id`);
+                      const scream = db.doc(`/screams/${doc.id}`);
                       batch.update(scream, { userImage: change.after.data().imageURL});
-                  });
+                  }) 
                   return batch.commit();
               });
           }else{ return true; }
