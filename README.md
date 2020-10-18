@@ -1,2 +1,3 @@
 # socialprimate
-create new repository for social app (socialprimate)
+Social Primate Backend
+<hr />
